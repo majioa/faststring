@@ -3,8 +3,6 @@
 
 ;	include constant.inc
 	PUBLIC	DllEntryPoint1
-	PUBLIC	@FastString@$bdtr$qqrv
-	PUBLIC	@FastString@$bctr$qqrpxc
 
 ;	EXTRN	LoadBorlandMemoryFuncs:near
 ;	EXTRN	FreeBorlandMemoryFuncs:near
@@ -18,10 +16,18 @@
 	PUBLIC	MemoryFree
 	PUBLIC	LoadBorlandMemoryFuncs
 	PUBLIC	FreeBorlandMemoryFuncs
+	PUBLIC	GetSystemCodepage
 	PUBLIC	GetMemInfoFuncs
 	PUBLIC	GetDecimalSeparator
 	PUBLIC	GetPositiveSign
 	PUBLIC	GetNegativeSign
+	PUBLIC	decimal_constant
+;	PUBLIC	Sign_Symbols
+;	PUBLIC	Floating_Point_Symbol
+
+	EXTRN	Floating_point_symbol:byte
+	EXTRN	Positive_sign_symbol:byte
+	EXTRN	Negative_sign_symbol:byte
 
 ;	PUBLIC	hBorlandMM
 ;	PUBLIC	BorlandAllocMemory
@@ -64,6 +70,8 @@
 	EXTRN	GetProcAddress:near
 	EXTRN	LoadLibraryA:near
 	EXTRN	FreeLibrary:near
+	EXTRN	GetACP:near
+	EXTRN	GetUserDefaultLCID:near
 
 	.code
 
@@ -76,9 +84,49 @@ DllEntryPoint1:
 	jc	DllEntryPoint_process_detach
 	jnz	DllEntryPoint_exit
 	;DLL_PROCESS_ATTACH
+	pushad
+	push	eax
+	mov	ebp, esp
+	call	GetUserDefaultLCID
+	push	eax
+	push	1
+	push	ebp
+	push	LOCALE_SDECIMAL
+	push	eax
+	call	GetLocaleInfoA
+	or	eax, eax
+	jnz	DllEntryPoint_enter1
+	mov	al, [ebp]
+	mov	[Floating_point_symbol], al
+DllEntryPoint_enter1:
+	push	1
+	push	ebp
+	push	LOCALE_SNEGATIVESIGN
+	push	dword ptr [esp+0ch]
+	call	GetLocaleInfoA
+	or	eax, eax
+	jnz	DllEntryPoint_enter2
+	mov	al, [ebp]
+	mov	byte ptr [Negative_sign_symbol], al
+DllEntryPoint_enter2:
+	push	1
+	push	ebp
+	push	LOCALE_SPOSITIVESIGN
+	push	dword ptr [esp+0ch]
+	call	GetLocaleInfoA
+	or	eax, eax
+	jnz	DllEntryPoint_enter3
+	mov	al, [ebp]
+	mov	byte ptr [Positive_sign_symbol], al
+;	call	GetLastError
+;	mov	dword ptr[Floating_Point_Symbol+1], eax
+DllEntryPoint_enter3:
+	pop	eax
+	pop	eax
+	popad
 	cmp	[hBorlandMM], 0
 	jnz	short	DllEntryPoint_exit1
-;!	call	LoadBorlandMemoryFuncs
+	call	LoadBorlandMemoryFuncs
 	jmp	short	DllEntryPoint_exit
 DllEntryPoint_process_detach:
 	;DLL_PROCESS_DETACH
@@ -200,6 +248,7 @@ MemoryReAlloc	endp
 
 
 LoadBorlandMemoryFuncs	proc	near
+	ret
 	push	offset BorlandMMDllName
 	call	LoadLibraryA
 	or	eax, eax
@@ -320,43 +369,28 @@ GetNegativeSign_exit:
 GetNegativeSign endp
 
 
-
-
-@FastString@$bctr$qqrv	proc	near
-	mov	dword ptr [eax], 0
+GetSystemCodepage	proc	near
+	;out
+	;eax: codepage
+	;ecx, edx: destroyed
+	push	edi
+	call	GetACP
+	lea	edi, WinCP_CP
+	mov	ecx, 14
+	repnz	scasd
+	mov	eax, [WinCP_Decode + ecx*4]
+	pop	edi
 	ret
-@FastString@$bctr$qqrv	endp
-
-
-@FastString@$bdtr$qqrv	proc	near
-StringFree:
-	;in
-	;eax: this
-	mov	eax, [eax]
-	or	eax, eax
-	jz	StringFree_exit
-;	call	MemoryFree
-	push	eax
-	call	GlobalFree
-	call	GetLastError
-StringFree_exit:
-	ret
-@FastString@$bdtr$qqrv	endp
-
-@FastString@$basg$qqrrx17System@AnsiString	proc	near
-@FastString@$bctr$qqrpxc:
-	push	ebx
-	mov	ebx, eax
-	push	24h
-	push	40h
-	call	GlobalAlloc
-	mov	[ebx],eax
-	pop	ebx
-	ret
-@FastString@$basg$qqrrx17System@AnsiString	endp
-
+GetSystemCodepage	endp
 
 .data
+decimal_constant	label	byte
+	dd	0ah
+;Sign_Symbols	label	word
+;	db	'-'
+;	db	'+'
+;Floating_Point_Symbol	label	byte
+;	db	','
 BorlandMMDllName	db	'borlndmm.dll',0
 SysGetMemFuncName	db	'GetMemory',0
 SysReallocMemFuncName	db	'ReallocMemory',0
@@ -365,6 +399,41 @@ hBorlandMM		dd	0
 BorlandAllocMemory	dd	?
 BorlandReallocMemory	dd	?
 BorlandFreeMemory	dd	?
+WinCP_CP		label	dword
+	dd	874
+	dd	932
+	dd	936
+	dd	949
+	dd	950
+	dd	1200
+	dd	1250
+	dd	1251
+	dd	1252
+	dd	1253
+	dd	1254
+	dd	1255
+	dd	1256
+	dd	1257
+WinCP_Decode		label	dword
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	1
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	0
+	dd	0
 
+type1 = LOCALE_SNEGATIVESIGN
+type2 = LOCALE_SPOSITIVESIGN
+type3 = LOCALE_SDECIMAL
+buffer1 dd 0,0,0
+sizebuf1 = 12
 
 end	DllEntryPoint
