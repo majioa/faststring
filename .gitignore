@@ -1,0 +1,24 @@
+#  Object Files
+*.o
+
+# List Files
+*.lst
+*.err
+
+# Map files
+*.map
+
+# Executable files
+*.so
+*.dll
+
+# Debug files
+*.tds
+
+# Lib files
+*.lib
+
+# vim backup, swap, and settings
+*~
+*.swp
+*.vim

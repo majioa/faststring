@@ -1,0 +1,71 @@
+LIBRARY strings.dll INITINSTANCE
+CODE PRELOAD EXECUTEREAD FIXED NONDISCARDABLE
+DATA SINGLE READWRITE PRELOAD SHARED
+HEAPSIZE 0x1000, 0x100000
+DESCRIPTION 'Mathematical variant class library'
+;SUBSYSTEM NATIVE, 4.0
+IMPORTS
+KERNEL32.GlobalAlloc
+KERNEL32.GlobalReAlloc
+KERNEL32.GlobalSize
+KERNEL32.GlobalFree
+KERNEL32.GetLastError
+KERNEL32.GetLocaleInfoA
+;KERNEL32.GetModuleHandleA
+KERNEL32.GetProcAddress
+KERNEL32.LoadLibraryA
+KERNEL32.FreeLibrary
+KERNEL32.GetACP
+KERNEL32.GetUserDefaultLCID
+
+EXPORTS
+;Fast string functions
+@FastString@$bctr$qqrv
+@FastString@$bctr$qqrxo
+@FastString@$bctr$qqrxc
+@FastString@$bctr$qqrxuc
+@FastString@$bctr$qqrxs
+@FastString@$bctr$qqrxus
+@FastString@$bctr$qqrxi
+@FastString@$bctr$qqrxl
+@FastString@$bctr$qqrxui
+@FastString@$bctr$qqrxul
+@FastString@$bctr$qqrxj
+@FastString@$bctr$qqrxuj
+@FastString@$bctr$qqrxf
+@FastString@$bctr$qqrxd
+@FastString@$bctr$qqrxg
+@FastString@$bctr$qqrpxc
+@FastString@$bctr$qqrpxb
+@FastString@$bctr$qqrrx17System@AnsiString
+@FastString@$bctr$qqrrx17System@WideString
+@FastString@$bctr$qqrrx11MathVariant
+@FastString@$bctr$qqrrx10FastString
+@FastString@$bdtr$qqrv
+@FastString@$oo$xqqrv
+@FastString@$oc$xqqrv
+@FastString@$ozc$xqqrv
+@FastString@$ouc$xqqrv
+@FastString@$os$xqqrv
+@FastString@$ous$xqqrv
+@FastString@$oi$xqqrv
+@FastString@$ol$xqqrv
+@FastString@$oui$xqqrv
+@FastString@$oul$xqqrv
+@FastString@$oj$xqqrv
+@FastString@$ouj$xqqrv
+@FastString@$of$xqqrv
+@FastString@$od$xqqrv
+@FastString@$og$xqqrv
+@FastString@$opv$xqqrv
+@FastString@$opb$qqrv
+@FastString@$opc$qqrv
+@FastString@$o17System@AnsiString$qqrv
+@FastString@$o17System@WideString$qqrv
+@FastString@ConvertTo$qqrul
+@FastString@SetCodePage$qqrul
+
+;Probe and test functions
+GetMemInfoFuncs
+LoadBorlandMemoryFuncs
+DllEntryPoint1
